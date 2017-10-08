@@ -21,7 +21,7 @@ defmodule Project3.Mixfile do
 
   defp escript() do
     [
-    main_module: Project2
+    main_module: Project3
     ]
     end
   # Run "mix help deps" to learn about dependencies.
@@ -29,6 +29,7 @@ defmodule Project3.Mixfile do
     [
       # {:dep_from_hexpm, "~> 0.3.0"},
       # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"},
+      {:convertat, "~> 1.0"}
     ]
   end
 end
