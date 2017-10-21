@@ -26,7 +26,7 @@ defmodule Project3.Client do
                     state_temp=GenServer.call({x,Node.self()},{:state,1,1,1},:infinity)
                     rout_temp=elem(state_temp,2)
                     Enum.map(Map.values(list),fn(x)->
-                        GenServer.cast({x,Node.self()},{:join,state,name,x})
+                        GenServer.cast({x,Node.self()},{:join,state,name,x,1})
                     end)
                     temp = Enum.map(Map.values(rout_temp),fn(x)->
                         if x != nil do
@@ -34,7 +34,7 @@ defmodule Project3.Client do
                             elem(state,2)
                         end
                     end)|>Enum.max(fn->elem(state,2) end)
-                    state=Tuple.delete_at(state,2)|>Tuple.append(temp)
+                    state=Tuple.delete_at(state,2)|>Tuple.insert_at(2,temp)
                 end)
                 rout_temp=elem(state,0)
                 temp = Enum.map(Map.values(rout_temp),fn(x)->
@@ -44,8 +44,14 @@ defmodule Project3.Client do
                         elem(state,2)
                     end
                 end)|>Enum.max(fn->elem(state,2) end)
-                state=Tuple.delete_at(state,2)|>Tuple.append(temp)
+                state=Tuple.delete_at(state,2)|>Tuple.insert_at(2,temp)
                 state=leaf_maker(state)
+                Enum.map(Map.values(elem(state,0)),fn(x)->
+                    GenServer.cast({x,Node.self()},{:join,state,name,x,1})
+                end)
+                Enum.map(Map.values(elem(state,1)),fn(x)->
+                    GenServer.cast({x|>String.to_atom,Node.self},{:join,state,name,x|>String.to_atom,1})
+                end)
                 {:reply,state,state}
             :forward->
                 curr_id=key|>Atom.to_string#:crypto.hash(:sha,name)|>Base.encode16|>Convertat.from_base(16) |> Convertat.to_base(4)
@@ -70,15 +76,15 @@ defmodule Project3.Client do
                         map=elem(state,2) #we will take values from the state and move them forward
                         Enum.map(Map.values(map),fn(x)->
                             state_key=GenServer.call({x|>String.to_atom,Node.self()},{:state,1,1,1},:infinity)
-                            GenServer.cast({myname,Node.self()},{:join,state_key,myname,myname})
+                            GenServer.cast({myname,Node.self()},{:join,state_key,myname,myname,1})
                         end)
                         #Process.sleep(1000)
-                        #GenServer.cast({myname,Node.self()},{:join_state,key,nextId,myname})
+                        #GenServer.call({myname,Node.self()},{:join_state,key,nextId,myname})
                         {:reply,state,state}
                  #we are sending our own value back to the join function
         end
     end
-    def handle_cast({choice,key,nextId,myname},state) do   
+    def handle_cast({choice,key,nextId,myname,jumps},state) do   
             case choice do
                 :join->
                         state_temp=key
@@ -90,52 +96,46 @@ defmodule Project3.Client do
                                 elem(state,2)
                             end
                         end)|>Enum.max(fn->elem(state,2) end)
-                        state=Tuple.delete_at(state,2)|>Tuple.append(temp)
+                        state=Tuple.delete_at(state,2)|>Tuple.insert_at(2,temp)
                         list=elem(state,0)
                         state=leaf_maker(state)
                         {:noreply,state}
                 :route->
-                        #IO.inspect key
-                        a=key |> Atom.to_string
-                        b=myname |> Atom.to_string
-                        if(a==b) do
-                            IO.puts "Found"
-                        else    
-                            leaf=elem(state,1)
-                            routing=elem(state,2)
-                            d=shl(a,b)
-                            {l_min,l_max}=Enum.map(Map.values(leaf),fn(x)->
-                            shl(b,x) 
-                            end)|>Enum.min_max
-                            if Enum.member?(Map.values(leaf),a) do
-                                {k,v}=Enum.map(Map.keys(leaf),fn(x)->
-                                    {x,abs(shl(Map.get(leaf,x),b)-d)}
-                                end)|>Enum.min_by(fn {k,v}->v end)
-                                GenServer.cast({Map.get(leaf,k)|>String.to_atom,Node.self()},{:route,key,nextId,Map.get(leaf,k)|>String.to_atom})
-                            else
-                                val=Enum.map(0..3, fn(x)->
-                                    if(Map.get(routing,d*4+x) != nil) do
-                                        {1,d*4+x}
-                                    end
-                                    {-1,1}
-                                end) |> Map.new 
-                                if Map.get(val,1) != nil do
-                                    GenServer.cast({Map.get(routing,Map.get(val,1))|>String.to_atom,Node.self()},{:route,key,nextId,Map.get(routing,Map.get(val,1))|>String.to_atom})
+                            a=key |> Atom.to_string
+                            b=myname |> Atom.to_string
+                            if(a==b) do
+                                GenServer.call({:Server,Node.self()},{:server,nextId,jumps},:infinity)
+                            else 
+                                leaf=elem(state,1)
+                                routing=elem(state,2)
+                                d=shl(a,b)
+                                {l_min,l_max}=Enum.map(Map.values(leaf),fn(x)->
+                                shl(b,x) 
+                                end)|>Enum.min_max
+                                if Enum.member?(Map.values(leaf),a) do
+                                    {k,v}=Enum.map(Map.keys(leaf),fn(x)->
+                                        {x,abs(shl(Map.get(leaf,x),b)-d)}
+                                    end)|>Enum.min_by(fn {k,v}->v end)
+                                    GenServer.cast({Map.get(leaf,k)|>String.to_atom,Node.self()},{:route,key,nextId,Map.get(leaf,k)|>String.to_atom,jumps+1})
                                 else
-                                    mer=Map.merge(leaf,routing)
-                                    mer=Enum.map(Map.keys(elem(state,0)),fn(x)->
-                                        {x,Map.get(elem(state,0),x)|>Atom.to_string}
-                                    end)|>Map.new|>Map.merge(mer)
-                                    #IO.inspect mer
-                                    {k,v}=Enum.map(Map.values(mer),fn(x)->
-                                        {x,shl(a,x)-d}
-                                    end)|>Enum.max_by(fn {k,v}->v end)
-                                    #IO.puts v
-                                    GenServer.cast({k|>String.to_atom,Node.self()},{:route,key,myname,k|>String.to_atom})
-                                end
-                            end 
-                        end
-                    {:noreply,state}
+                                    val=Enum.map(0..3, fn(x)->
+                                        if(Map.get(routing,d*4+x) != nil) do
+                                            GenServer.cast({Map.get(routing,d*4+x)|>String.to_atom,Node.self()},{:route,key,nextId,Map.get(routing,d*4+x)|>String.to_atom,jumps+1})
+                                            {1,d*4+x}
+                                        end
+                                        {-1,1}
+                                    end) |> Map.new 
+                                    if Map.get(val,1) == nil do
+                                        mer=Map.merge(leaf,routing)
+                                        mer=Enum.map(Map.keys(elem(state,0)),fn(x)->
+                                            {x,Map.get(elem(state,0),x)|>Atom.to_string}
+                                        end)|>Map.new|>Map.merge(mer)
+                                        val=Enum.max_by(Map.values(mer),fn(x)->shl(a,x)-d end)
+                                        GenServer.cast({val|>String.to_atom,Node.self()},{:route,key,nextId,val|>String.to_atom,jumps+1})
+                                    end
+                                end 
+                            end
+                        {:noreply,state}
                 end
     end
     def routing_maker(state,name,name_next) do
@@ -154,11 +154,11 @@ defmodule Project3.Client do
             if temp != nil and temp != name and Map.get(routing,String.length(val)*4+String.to_integer(temp)) == nil do
                 temp=temp|>String.to_integer
                 routing=Map.put(routing,(String.length(val))*4+temp,name_next)
-                state=Tuple.delete_at(state,2)|>Tuple.append(routing)
+                state=Tuple.delete_at(state,2)|>Tuple.insert_at(2,routing)
                 list=elem(state,0)
                 Enum.map(Map.values(list),fn(x)->
-                    GenServer.cast({x,Node.self()},{:join,state,name,x})
-                    GenServer.cast({name|>String.to_atom,Node.self()},{:join,state,x,name|>String.to_atom})
+                    GenServer.cast({x,Node.self()},{:join,state,name,x,1})
+                    GenServer.cast({name|>String.to_atom,Node.self()},{:join,state,x,name|>String.to_atom,1})
                 end)
             end
         end
