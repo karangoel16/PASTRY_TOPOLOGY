@@ -29,7 +29,7 @@ defmodule Project3 do
     Enum.map(0..number_of_req,fn(x)->
       Enum.map(0..(number_of_nodes-1),fn(y)->
         to = :random.uniform(number_of_nodes)
-        GenServer.cast({Map.get(map,x),Node.self()},{:route,Map.get(map,to),:rand.uniform(100000),Map.get(map,y),0})
+        GenServer.cast({Map.get(map,x),Node.self()},{:route,Map.get(map,to),:rand.uniform(100000000),Map.get(map,y),0})
       end)
     end)  
     {:ok,{map,number_of_nodes,number_of_req,%{}}}
