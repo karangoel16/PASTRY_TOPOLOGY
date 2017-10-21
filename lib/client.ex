@@ -78,6 +78,11 @@ defmodule Project3.Client do
                             state_key=GenServer.call({x|>String.to_atom,Node.self()},{:state,1,1,1},:infinity)
                             GenServer.cast({myname,Node.self()},{:join,state_key,myname,myname,1})
                         end)
+                        map=elem(state,1) #we will take values from the state and move them forward
+                        Enum.map(Map.values(map),fn(x)->
+                            state_key=GenServer.call({x|>String.to_atom,Node.self()},{:state,1,1,1},:infinity)
+                            GenServer.cast({myname,Node.self()},{:join,state_key,myname,myname,1})
+                        end)
                         #Process.sleep(1000)
                         #GenServer.call({myname,Node.self()},{:join_state,key,nextId,myname})
                         {:reply,state,state}

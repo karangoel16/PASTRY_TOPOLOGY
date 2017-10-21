@@ -29,7 +29,7 @@ defmodule Project3 do
     Enum.map(0..number_of_req,fn(x)->
       Enum.map(0..(number_of_nodes-1),fn(y)->
         to = :random.uniform(number_of_nodes)
-        GenServer.cast({Map.get(map,x),Node.self()},{:route,Map.get(map,to),:rand.uniform(100000000),Map.get(map,y),0})
+        GenServer.cast({Map.get(map,y),Node.self()},{:route,Map.get(map,to),:crypto.hash(:sha,(x+y+to+:random.uniform(100))|>Integer.to_string),Map.get(map,y),0})
       end)
     end)  
     {:ok,{map,number_of_nodes,number_of_req,%{}}}
@@ -56,14 +56,16 @@ defmodule Project3 do
         {:reply,route,state}
       :server->
         maps=elem(state,3)
-        IO.puts length(Map.values(maps))
-        if(length(Map.values(maps)) >= elem(state,1)*elem(state,2)*0.8) do
+        if(length(Map.values(maps)) >= elem(state,1)*elem(state,2)*0.7) do
           IO.puts Enum.sum(Map.values(maps))/(Map.values(maps)|>length)
           Enum.map(0..(elem(state,1)-1),fn(x)->
             GenServer.stop({x|>Integer.to_string|>String.to_atom,Node.self()})
           end)
           #Process.exit(self(),:kill)
         else
+            if Map.get(maps,name) == nil do
+              IO.puts length(Map.values(maps))
+            end
             maps=Map.put_new(maps,name,jumps)
             state=Tuple.delete_at(state,3)|>Tuple.insert_at(3,maps)
         end
