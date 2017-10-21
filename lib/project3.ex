@@ -14,7 +14,7 @@ defmodule Project3 do
       {x , Map.get(map,x)}
     end)
     Enum.map(0..(number_of_nodes-1),fn(x)->
-      Enum.map(Enum.take_random(0..(number_of_nodes-1),2),fn(y)->
+      Enum.map(Enum.take_random(0..(number_of_nodes-1),4),fn(y)->
         if x != y do
         GenServer.call({Map.get(map,x),Node.self()},{:test,Map.get(map,x),y,""},:infinity)
         GenServer.call({Map.get(map,y),Node.self()},{:test,Map.get(map,y),x,""},:infinity)
