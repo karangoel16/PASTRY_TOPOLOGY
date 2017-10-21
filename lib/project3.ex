@@ -58,10 +58,10 @@ defmodule Project3 do
         maps=elem(state,3)
         if(length(Map.values(maps)) >= elem(state,1)*elem(state,2)*0.7) do
           IO.puts Enum.sum(Map.values(maps))/(Map.values(maps)|>length)
-          Enum.map(0..(elem(state,1)-1),fn(x)->
-            GenServer.stop({x|>Integer.to_string|>String.to_atom,Node.self()})
+          Enum.map(Map.values(elem(state,0)),fn(x)->
+            GenServer.stop({x,Node.self()})
           end)
-          #Process.exit(self(),:kill)
+          Process.exit(self(),:normal)
         else
             if Map.get(maps,name) == nil do
               IO.puts length(Map.values(maps))

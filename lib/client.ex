@@ -21,6 +21,7 @@ defmodule Project3.Client do
                 name=key|>Atom.to_string
                 Enum.map(Map.values(elem(state,0)),fn(x)->
                     name_next=x|>Atom.to_string
+                    state=routing_maker(state,name,name)
                     state=routing_maker(state,name,name_next)
                     list=elem(state,0)
                     state_temp=GenServer.call({x,Node.self()},{:state,1,1,1},:infinity)
