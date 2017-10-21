@@ -101,6 +101,7 @@ defmodule Project3.Client do
                         state=leaf_maker(state)
                         {:noreply,state}
                 :route->
+                        Process.sleep(100)
                             a=key |> Atom.to_string
                             b=myname |> Atom.to_string
                             if(a==b) do

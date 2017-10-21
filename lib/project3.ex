@@ -56,8 +56,8 @@ defmodule Project3 do
         {:reply,route,state}
       :server->
         maps=elem(state,3)
-        #IO.puts length(Map.values(maps))
-        if(length(Map.values(maps)) >= elem(state,1)*elem(state,2)) do
+        IO.puts length(Map.values(maps))
+        if(length(Map.values(maps)) >= elem(state,1)*elem(state,2)*0.8) do
           IO.puts Enum.sum(Map.values(maps))/(Map.values(maps)|>length)
           Enum.map(0..(elem(state,1)-1),fn(x)->
             GenServer.stop({x|>Integer.to_string|>String.to_atom,Node.self()})
