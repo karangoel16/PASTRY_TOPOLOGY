@@ -60,14 +60,14 @@ defmodule Project3 do
       :server->
         maps=elem(state,3)
         if(length(Map.values(maps)) >= elem(state,1)*elem(state,2)*0.7) do
-          IO.puts Enum.sum(Map.values(maps))/(Map.values(maps)|>length)
+          IO.puts "RESULT " <> Float.to_string(Enum.sum(Map.values(maps))/(Map.values(maps)|>length))
           Enum.map(Map.values(elem(state,0)),fn(x)->
             GenServer.stop({x,Node.self()})
           end)
           Process.exit(self(),:normal)
         else
             if Map.get(maps,name) == nil do
-              IO.puts length(Map.values(maps)) <> Enum.sum(Map.values(maps))/(Map.values(maps)|>length) |> Float.to_string 
+              IO.puts Integer.to_string(length(Map.values(maps))) <> " " <> Float.to_string(Enum.sum(Map.values(maps))/(length(Map.values(maps)) + 1))
             end
             maps=Map.put_new(maps,name,jumps)
             state=Tuple.delete_at(state,3)|>Tuple.insert_at(3,maps)
