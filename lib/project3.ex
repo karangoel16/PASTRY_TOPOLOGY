@@ -43,7 +43,7 @@ defmodule Project3 do
       Enum.map(0..(number_of_nodes-1),fn(y)->
         to = :random.uniform(number_of_nodes)
         GenServer.cast({Map.get(map,y),Node.self()},{:route,Map.get(map,to),:crypto.hash(:sha,(x+y+to+:random.uniform(100))|>Integer.to_string),Map.get(map,y),0})
-        Process.sleep(10)
+        #Process.sleep(10)
       end)
     end)  
     Process.sleep(1_000_000)
@@ -75,7 +75,7 @@ defmodule Project3 do
             state=Tuple.delete_at(state,3)|>Tuple.insert_at(3,maps)
         end
         {:reply,"",state}
-      _->IO.puts "Undefined call value in Server"
+      _->
        {:reply,state,state};
     end
   end

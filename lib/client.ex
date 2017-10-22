@@ -107,14 +107,14 @@ defmodule Project3.Client do
                         state=leaf_maker(state)
                         {:noreply,state}
                 :route->
-                            Process.sleep(10)
+                            #Process.sleep(10)
                             a=key |> Atom.to_string
                             b=myname |> Atom.to_string
                             if(a==b) do
-                                Process.sleep(10)
+                                #Process.sleep(10)
                                 GenServer.call({:Server,Node.self()},{:server,nextId,jumps},:infinity)
                             else 
-                                Process.sleep(10)
+                                #Process.sleep(10)
                                 leaf=elem(state,1)
                                 routing=elem(state,2)
                                 d=shl(a,b)
@@ -145,7 +145,7 @@ defmodule Project3.Client do
                                             {x,Map.get(elem(state,0),x)|>Atom.to_string}
                                         end)|>Map.new|>Map.merge(mer)
                                         val=Enum.max_by(Map.values(mer),fn(x)->shl(a,x)-d end)
-                                        #GenServer.cast({val|>String.to_atom,Node.self()},{:route,key,nextId,val|>String.to_atom,jumps+1})
+                                        GenServer.cast({val|>String.to_atom,Node.self()},{:route,key,nextId,val|>String.to_atom,jumps+1})
                                         Enum.map(Enum.take_random(Map.values(mer),1),fn(x)->
                                             GenServer.cast({x|>String.to_atom,Node.self()},{:route,key,nextId,x|>String.to_atom,jumps+1})
                                         end)
