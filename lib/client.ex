@@ -129,18 +129,24 @@ defmodule Project3.Client do
                                 else
                                     val=Enum.map(0..3, fn(x)->
                                         if(Map.get(routing,d*4+x) != nil) do
-                                            GenServer.cast({Map.get(routing,d*4+x)|>String.to_atom,Node.self()},{:route,key,nextId,Map.get(routing,d*4+x)|>String.to_atom,jumps+1})
-                                            {1,d*4+x}
+                                            #GenServer.cast({Map.get(routing,d*4+x)|>String.to_atom,Node.self()},{:route,key,nextId,Map.get(routing,d*4+x)|>String.to_atom,jumps+1})
+                                            {x,d*4+x}
                                         end
                                         {-1,1}
-                                    end) |> Map.new 
-                                    if Map.get(val,1) == nil do
+                                    end) |> Map.new |> Map.delete(-1)
+                                    if Map.values(val)|> length != 0 do
+                                        Enum.map(Enum.take_random(Map.values(val),1),fn(x)->
+                                            GenServer.cast({Map.get(routing,x)|>String.to_atom,Node.self()},{:route,key,nextId,Map.get(routing,x)|>String.to_atom,jumps+1})
+                                        end)
+                                    end 
+                                    if Map.values(val)|> length == 0 do
                                         mer=Map.merge(leaf,routing)
                                         mer=Enum.map(Map.keys(elem(state,0)),fn(x)->
                                             {x,Map.get(elem(state,0),x)|>Atom.to_string}
                                         end)|>Map.new|>Map.merge(mer)
                                         val=Enum.max_by(Map.values(mer),fn(x)->shl(a,x)-d end)
-                                        Enum.map(Enum.take_random(Map.values(mer),4),fn(x)->
+                                        GenServer.cast({val|>String.to_atom,Node.self()},{:route,key,nextId,val|>String.to_atom,jumps+1})
+                                        Enum.map(Enum.take_random(Map.values(mer),1),fn(x)->
                                             GenServer.cast({x|>String.to_atom,Node.self()},{:route,key,nextId,x|>String.to_atom,jumps+1})
                                         end)
                                     end
