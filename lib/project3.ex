@@ -67,7 +67,7 @@ defmodule Project3 do
           Process.exit(self(),:normal)
         else
             if Map.get(maps,name) == nil do
-              IO.puts length(Map.values(maps))
+              IO.puts length(Map.values(maps)) <> Enum.sum(Map.values(maps))/(Map.values(maps)|>length) |> Float.to_string 
             end
             maps=Map.put_new(maps,name,jumps)
             state=Tuple.delete_at(state,3)|>Tuple.insert_at(3,maps)
