@@ -20,8 +20,6 @@ defmodule Project3 do
         GenServer.call({Map.get(map,y),Node.self()},{:test,Map.get(map,y),x,""},:infinity)
         end
       end)
-    end)
-    Enum.map(0..(number_of_nodes-1),fn(x)->
       GenServer.call({Map.get(map,x),Node.self()},{:link,Map.get(map,x),"",""},:infinity)
       GenServer.call({Map.get(map,x),Node.self()},{:join_state,"","",Map.get(map,x)},:infinity)
     end)
