@@ -42,8 +42,8 @@ defmodule Project3 do
     Enum.map(0..number_of_req,fn(x)->
       Enum.map(0..(number_of_nodes-1),fn(y)->
         to = :rand.uniform(number_of_nodes)
-        GenServer.cast({Map.get(map,y),Node.self()},{:route,Map.get(map,to),:crypto.hash(:sha,(x+y+to+:rand.uniform(100))|>Integer.to_string),Map.get(map,y),0})
-        #Process.sleep(10)
+        GenServer.cast({Map.get(map,y),Node.self()},{:route,Map.get(map,to),:crypto.hash(:sha,(x+y+to+:rand.uniform(1000000))|>Integer.to_string),Map.get(map,y),0})
+        Process.sleep(10)
       end)
     end)  
     Process.sleep(1_000_000)

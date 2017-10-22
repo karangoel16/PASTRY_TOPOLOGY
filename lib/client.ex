@@ -47,14 +47,12 @@ defmodule Project3.Client do
                 end)|>Enum.max(fn->elem(state,2) end)
                 state=Tuple.delete_at(state,2)|>Tuple.insert_at(2,temp)
                 state=leaf_maker(state)
-                """
                 Enum.map(Map.values(elem(state,0)),fn(x)->
                     GenServer.cast({x,Node.self()},{:join,state,name,x,1})
                 end)
                 Enum.map(Map.values(elem(state,1)),fn(x)->
                     GenServer.cast({x|>String.to_atom,Node.self},{:join,state,name,x|>String.to_atom,1})
                 end)
-                """
                 {:reply,state,state}
             :forward->
                 curr_id=key|>Atom.to_string#:crypto.hash(:sha,name)|>Base.encode16|>Convertat.from_base(16) |> Convertat.to_base(4)
